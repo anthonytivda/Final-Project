@@ -120,28 +120,66 @@ def estimate_metabolic_cost(mass, speed, cadence, stiffness, damping, foot_type)
 	kcal_per_min = total * 0.01433 * mass / 60.0  # made-up scaling for visualization
 	return max(0.0, kcal_per_min)
 
-
 def compute_injury_risk(df_moments, mass, speed, cadence):
-	"""
-	Compute a simple injury risk score from peak joint moments relative to heuristic thresholds,
-	plus cadence extremes and speed. Output 0-100 risk percent.
-	"""
-	peak_knee = df_moments['knee_Nm'].abs().max()
-	peak_hip = df_moments['hip_Nm'].abs().max()
+    """
+    More sensitive injury risk model with stronger scaling.
+    - Lower joint load thresholds so realistic peaks can exceed them
+    - Normalize loads, cadence, and speed into 0–2 severity scores
+    - Joint loads dominate the overall risk
 
-	# thresholds scale with mass
-	knee_thresh = 12.0 * mass
-	hip_thresh = 18.0 * mass
+    Returns:
+        risk (0–100), peak_knee, peak_hip
+    """
+    peak_knee = float(df_moments['knee_Nm'].abs().max())
+    peak_hip  = float(df_moments['hip_Nm'].abs().max())
 
-	knee_ratio = peak_knee / knee_thresh
-	hip_ratio = peak_hip / hip_thresh
+    # --- 1. Joint load thresholds (MUCH lower than before) ---
+    # These are heuristic "safe-ish" limits that scale with mass.
+    # Calibrated so that for realistic peaks:
+    #   - Normal walking → load_ratio < ~0.5
+    #   - Aggressive conditions → load_ratio >= 1.0
+    knee_thresh = 2.0 * mass   # was 10–12 * mass
+    hip_thresh  = 2.5 * mass   # was 15–18 * mass
 
-	cadence_penalty = 0.02 * abs(cadence - 110) / 10.0
-	speed_penalty = 0.05 * max(0, speed - 1.6)
+    knee_ratio = peak_knee / knee_thresh
+    hip_ratio  = peak_hip / hip_thresh
 
-	raw = (0.6 * knee_ratio + 0.4 * hip_ratio) + cadence_penalty + speed_penalty
-	risk = np.clip(100 * (raw / 1.3), 0, 100)
-	return float(risk), peak_knee, peak_hip
+    # Weighted combined load index
+    load_index = 0.7 * knee_ratio + 0.3 * hip_ratio
+
+    # Convert load_index → 0–2 severity:
+    #   < 0.3 → basically "safe"
+    #   ~1.0 → high but not extreme
+    #   ≥ 1.5 → very high
+    load_norm = (load_index - 0.3) / 1.2
+    load_norm = float(np.clip(load_norm, 0.0, 2.0))
+
+    # --- 2. Cadence severity (0–2) ---
+    # 110 steps/min is nominal. 25 spm away ≈ severity ~1.
+    cadence_dev = abs(cadence - 110)
+    cadence_norm = (cadence_dev / 25.0)  # 25 spm off → 1.0
+    cadence_norm = float(np.clip(cadence_norm, 0.0, 2.0))
+
+    # --- 3. Speed severity (0–2) ---
+    # 1.2 m/s (~comfortable walk) is nominal.
+    # Every +0.6 m/s adds ~1 severity (so 1.8 m/s → 1.0, 2.4 m/s → ~2.0).
+    speed_excess = max(0.0, speed - 1.2)
+    speed_norm = speed_excess / 0.6
+    speed_norm = float(np.clip(speed_norm, 0.0, 2.0))
+
+    # --- 4. Combine into a 0–2 overall index ---
+    # Joint loads dominate; cadence next; speed least.
+    overall_index = (
+        0.7 * load_norm +
+        0.2 * cadence_norm +
+        0.1 * speed_norm
+    )
+
+    # Max overall_index (when all three max out at 2) = 2.0
+    # Map 0–2 → 0–100
+    risk = float(np.clip((overall_index / 2.0) * 100.0, 0.0, 100.0))
+
+    return risk, peak_knee, peak_hip
 
 
 # ------------------------- Plotting Helpers -------------------------
