@@ -10,5 +10,8 @@
     "python.defaultInterpreterPath": "/usr/bin/python3",
     "Lua.diagnostics.globals": [
         "love"
-    ]
+    ],
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python-envs.pythonProjects": [],
+    "remote.autoForwardPortsFallback": 0
 }
