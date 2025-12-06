@@ -54,15 +54,14 @@ Adjust prosthetic properties:
 
 ### Step 3: Explore Results and Optimize
 
-- Inspect the **Peak Load Summary** cards that report maximum knee/hip moments, derived joint forces, and the computed risk factor (Low / Moderate / High)
-- Review the **Joint Relationship Graphs** to see how individual prosthetic parameters (stiffness, damping, foot design, materials) influence peak moments and forces
-- Use the optional **Design Interaction View** to visualize relationships between prosthetic components (e.g., stiffness vs damping) and how those pairings shift joint loading trends
-- Download the synthesized results (CSV or JSON) for custom comparison or further plotting outside the app
+- Read the **Contributing Risk Factors & Recommendations** panel and the circular risk gauge to understand how your current setup ranks (Low / Moderate / High) and what tweaks the tool suggests
+- Inspect the **Primary Outputs** cards for peak knee/hip forces, peak moments, body-weight multiples, energy cost, and the calculated injury-risk percentage
+- Use the **Explore Prosthetic Design Relationships** chart to sweep any single design parameter (stiffness, damping, alignment, etc.) and see how it affects a chosen outcome such as knee force or energy cost
+- Export the generated data via the provided CSV/JSON download buttons to keep a record of simulations or perform offline comparisons
 
-## Data Description (optional)
+## Data Description
 
 ### Data Source
-
 This application generates synthetic simulation data based on parametric biomechanical models. No real patient data is used. The models are conceptual and designed for educational exploration of how prosthetic parameters influence joint loading and metabolic trends. All outputs are normalized and should not be used for clinical decision-making.
 
 ## Project Structure
@@ -75,9 +74,9 @@ Final-Project/
 ```
 
 **Key components in `.app.py`:**
-- **Gait simulation models**: Generate synthetic joint moment curves based on prosthetic and patient parameters
+- **Gait simulation models**: Generate synthetic joint load profiles based on prosthetic and patient parameters
 - **Metabolic cost estimation**: Calculates energy expenditure using parametric relationships
 - **Injury risk computation**: Produces a heuristic risk score incorporating joint loading, cadence, and speed
-- **Interactive visualizations**: Plotly charts for moments, metabolic trends, and heatmaps
-- **Data export functionality**: Download simulation results in CSV or JSON format
+- **Interactive dashboards**: Streamlit layouts for risk recommendations, peak-load metric cards, and the Explore Prosthetic Design Relationships sweep plot
+- **Data export functionality**: Download simulation and summary results (moments CSV, summary JSON, metabolic trend CSV) for reproducibility
 
