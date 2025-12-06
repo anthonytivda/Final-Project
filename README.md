@@ -69,8 +69,10 @@ This application generates synthetic simulation data based on parametric biomech
 ```
 Final-Project/
 ├── .app.py              # Main Streamlit application file containing all simulation logic, UI, and data visualization
-├── README.md            # This documentation file
-├── requirements.txt     # Python dependencies (streamlit, plotly, pandas, numpy, etc.)
+├── README.md            # Project documentation (context, setup, usage, reproducibility)
+├── requirements.txt     # Python dependencies for the Streamlit simulator
+├── .streamlit/          # Streamlit config (theme, layout preferences)
+└── .devcontainer/       # Codespaces/dev-container setup (Dockerfile, scripts, supervisor config)
 ```
 
 **Key components in `.app.py`:**
